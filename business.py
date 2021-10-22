@@ -39,7 +39,7 @@ if __name__ == "__main__":
     try:
         while True:
             if getFolders():
-                time.sleep(1)
+                time.sleep(10)
             else:
                 try:
                     aedtz = getExt('aedtz')[0]
@@ -49,7 +49,7 @@ if __name__ == "__main__":
                     new_aedt_path = os.path.join(new_folder, os.path.basename(aedtz))
                     shutil.move(aedtz, new_aedt_path)
                     os.chdir(new_folder)
-                    os.system(f'ansysedt -BatchSolve -ng -monitor -auto -machinelist numcores=20 {new_aedt_path}')
+                    os.system(f'ansysedt -BatchSolve -ng -monitor -autoextract reports -machinelist list="localhost:4:20:90%:1" {new_aedt_path}')
                 except:
                     pass
     except KeyboardInterrupt:
