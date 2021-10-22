@@ -76,7 +76,9 @@ for file in getExt('aedtz'):
                 st.write('Failed to remove!')
         
 st.subheader('-Finished Jobs')
-
+if len(getExt('zip')) == 0:
+    st.write('None')
+    
 for file in getExt('zip')[::-1]:
     file_path = os.path.join(queue_dir, file)
     file_size = round(os.path.getsize(file_path)/1e6, 1)

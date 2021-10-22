@@ -1,5 +1,5 @@
 queue_dir = 'c:/demo/'
-days_to_keep = 1/24
+days_to_keep = 3
 win64_path = 'C:\Program Files\AnsysEM\AnsysEM21.1\Win64'
 
 import os
