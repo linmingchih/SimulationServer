@@ -1,5 +1,6 @@
 queue_dir = 'c:/demo/'
-days_to_keep = 1
+days_to_keep = 1/24
+win64_path = 'C:\Program Files\AnsysEM\AnsysEM21.1\Win64'
 
 import os
 import time
@@ -9,7 +10,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
-os.environ['PATH']='C:\Program Files\AnsysEM\AnsysEM21.1\Win64'
+os.environ['PATH'] = win64_path
 
 def getFolders():
     folders = [os.path.join(queue_dir, i) for i in os.listdir(queue_dir) if os.path.isdir(os.path.join(queue_dir, i))]

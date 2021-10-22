@@ -1,6 +1,7 @@
 queue_dir = 'c:/demo/'
 
 import os
+import time
 import json
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
@@ -29,9 +30,8 @@ else:
 
 st.title('AEDT Simulation Submit System')
 
-st.subheader('Submit Jobs')
+st.subheader('-Submit Jobs')
 with st.form(key='my_form', clear_on_submit=True):
-
     files = st.file_uploader("Upload .aedtz", accept_multiple_files=True, type='aedtz')
     password = st.text_input('Password (For Remove Confirmation from Queue)')
     if st.form_submit_button(label='Submit'):
@@ -45,7 +45,9 @@ with st.form(key='my_form', clear_on_submit=True):
                 f.write(file.getbuffer())
 
 
-st.subheader('The Running Job')
+st.subheader('-The Running Job')
+if len(getFolders()) == 0:
+    st.write('None')
 
 for folder in getFolders():
     with st.expander(folder):
@@ -57,8 +59,10 @@ for folder in getFolders():
                         st.text_area('Simulation Message', f.read(), height=600)    
 
 
-st.subheader('Waiting Jobs')
-
+st.subheader('-Waiting Jobs')
+if len(getExt('aedtz')) == 0:
+    st.write('None')
+    
 for file in getExt('aedtz'):
     with st.expander(file):
         deleted_password = st.text_input('Remove Password', key='password_' + file)
@@ -71,12 +75,15 @@ for file in getExt('aedtz'):
             else:
                 st.write('Failed to remove!')
         
-st.subheader('Finished Jobs')
+st.subheader('-Finished Jobs')
 
-for file in getExt('zip'):
-    with st.expander(file):
+for file in getExt('zip')[::-1]:
+    file_path = os.path.join(queue_dir, file)
+    file_size = round(os.path.getsize(file_path)/1e6, 1)
+    file_date = time.ctime(os.path.getmtime(file_path))
+    with st.expander('{} ({}MB, {})'.format(file , file_size, file_date)):
         with open(os.path.join(queue_dir, file), 'rb') as f:
             data = f.read()
         st.download_button('download', data, file)
 
-st.write(password_table)
+#st.write(password_table)
