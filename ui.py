@@ -1,3 +1,4 @@
+ansysEM_path = "C:/Program Files/AnsysEM"
 queue_dir = 'c:/demo/'
 
 import os
@@ -9,6 +10,18 @@ from streamlit_autorefresh import st_autorefresh
 count = st_autorefresh(interval=60000)
 os.chdir(os.path.dirname(__file__))
 
+def getAnsysEMVersions():
+    import os
+    result = {}
+    for root, dirs, files in os.walk(ansysEM_path):
+        for file in files:
+            if file == 'ansysedt.exe':
+                version = root.split('\\')[-2]
+                result[version] = root
+    return result
+
+if 'AnsysEMversions' not in st.session_state:
+    st.session_state.AnsysEMversions = getAnsysEMVersions()
 
 def getFolders():
     folders = [i for i in os.listdir(queue_dir) if os.path.isdir(os.path.join(queue_dir, i))]
@@ -32,6 +45,9 @@ st.title('AEDT Simulation Submit System')
 
 st.subheader('-Submit Jobs')
 with st.form(key='my_form', clear_on_submit=True):
+    versions = st.session_state.AnsysEMversions.keys()
+    version = st.selectbox('ANSYS EM Version', list(versions)[::-1])
+    
     files = st.file_uploader("Upload .aedtz", accept_multiple_files=True, type='aedtz')
     password = st.text_input('Password (For Remove Confirmation from Queue)')
     if st.form_submit_button(label='Submit'):
@@ -41,7 +57,7 @@ with st.form(key='my_form', clear_on_submit=True):
                 with open('password.json', 'w') as f:
                     json.dump(password_table, f)
                     
-            with open(os.path.join(queue_dir, file.name), 'wb') as f:
+            with open(os.path.join(queue_dir, f'{version}_{file.name}'), 'wb') as f:
                 f.write(file.getbuffer())
 
 

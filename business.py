@@ -1,6 +1,6 @@
+ansysEM_path = r"C:/Program Files/AnsysEM"
 queue_dir = 'c:/demo/'
 days_to_keep = 3
-win64_path = 'C:\Program Files\AnsysEM\AnsysEM21.1\Win64'
 
 import os
 import time
@@ -9,8 +9,17 @@ import shutil
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+def getAnsysEMVersions():
+    import os
+    result = {}
+    for root, dirs, files in os.walk(ansysEM_path):
+        for file in files:
+            if file == 'ansysedt.exe':
+                version = root.split('\\')[-2]
+                result[version] = root
+    return result
 
-os.environ['PATH'] = win64_path
+ansysEMversions = getAnsysEMVersions()
 
 def getFolders():
     folders = [os.path.join(queue_dir, i) for i in os.listdir(queue_dir) if os.path.isdir(os.path.join(queue_dir, i))]
@@ -55,7 +64,10 @@ if __name__ == "__main__":
             else:
                 try:
                     aedtz = getExt('aedtz')[0]
-                    base_name = os.path.basename(aedtz).split('.')[0]
+                    base_name = os.path.basename(aedtz)[:-6]
+                    version = base_name.split('_')[0]
+                    os.environ['PATH'] = ansysEMversions[version]
+                    
                     new_folder = os.path.join(os.path.dirname(aedtz), base_name)
                     os.mkdir(new_folder)
                     new_aedt_path = os.path.join(new_folder, os.path.basename(aedtz))
