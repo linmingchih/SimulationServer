@@ -4,10 +4,23 @@ days_to_keep = 3
 
 import os
 import time
+import requests
 import datetime
 import shutil
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
+
+
+def lineNotifyMessage(msg):
+    headers = {
+        "Authorization": "Bearer " + '58ceAuCRlEIZPnjkcf4LGLV32AVgwSSNfYymTfUpxRi', 
+        "Content-Type" : "application/x-www-form-urlencoded"
+    }
+	
+    payload = {'message': msg}
+    r = requests.post("https://notify-api.line.me/api/notify", headers = headers, params = payload)
+    return r.status_code
 
 def getAnsysEMVersions():
     import os
@@ -41,6 +54,7 @@ class MyHandler(FileSystemEventHandler):
             shutil.make_archive(dir_name, 'zip', dir_name)
             os.chdir(queue_dir)
             shutil.rmtree(dir_name)
+            lineNotifyMessage(f'{dir_name} is Accomplished!')
 
 def deleteFilesOverDays():
     for dirpath, dirnames, filenames in os.walk(queue_dir):
@@ -73,6 +87,7 @@ if __name__ == "__main__":
                     new_aedt_path = os.path.join(new_folder, os.path.basename(aedtz))
                     shutil.move(aedtz, new_aedt_path)
                     os.chdir(new_folder)
+                    lineNotifyMessage(f'{aedtz} is Running!')
                     os.system(f'ansysedt -BatchSolve -ng -monitor -autoextract reports -machinelist list="localhost:4:20:90%:1" {new_aedt_path}')
                 except:
                     time.sleep(10)
