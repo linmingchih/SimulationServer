@@ -1,26 +1,34 @@
 ansysEM_path = r"C:/Program Files/AnsysEM"
 queue_dir = 'c:/demo/'
 days_to_keep = 3
+line_notify_handler = '58ceAuCRlEIZPnjkcf4LGLV32AVgwSSNfYymTfUpxRi'
 
 import os
 import time
 import requests
 import datetime
 import shutil
+import logging
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-
+log_format = '%(asctime)s %(levelname)s: %(message)s'
+logging.basicConfig(filename='simulation_status.log', filemode='w', level=logging.DEBUG, format=log_format)
 
 def lineNotifyMessage(msg):
-    headers = {
-        "Authorization": "Bearer " + '58ceAuCRlEIZPnjkcf4LGLV32AVgwSSNfYymTfUpxRi', 
-        "Content-Type" : "application/x-www-form-urlencoded"
-    }
-	
-    payload = {'message': msg}
-    r = requests.post("https://notify-api.line.me/api/notify", headers = headers, params = payload)
-    return r.status_code
+    if line_notify_handler:
+        headers = {
+            "Authorization": f"Bearer {line_notify_handler}",
+            "Content-Type" : "application/x-www-form-urlencoded"
+        }
+        
+        payload = {'message': msg}
+        r = requests.post("https://notify-api.line.me/api/notify", headers = headers, params = payload)
+        
+        return r.status_code
+
+    else:
+        return None
 
 def getAnsysEMVersions():
     import os
@@ -45,7 +53,7 @@ def getExt(ext = 'aedtz'):
     
 class MyHandler(FileSystemEventHandler):
     def on_created(self, event):
-        pass
+        logging.info('{} created.'.format(event.src_path))
     
     def on_deleted(self, event):
         if '.aedtz.lock' in event.src_path:
@@ -54,6 +62,7 @@ class MyHandler(FileSystemEventHandler):
             shutil.make_archive(dir_name, 'zip', dir_name)
             os.chdir(queue_dir)
             shutil.rmtree(dir_name)
+            logging.info('{} removed.'.format(event.src_path))
             lineNotifyMessage(f'{dir_name} is Accomplished!')
 
 def deleteFilesOverDays():
@@ -87,14 +96,19 @@ if __name__ == "__main__":
                     new_aedt_path = os.path.join(new_folder, os.path.basename(aedtz))
                     shutil.move(aedtz, new_aedt_path)
                     os.chdir(new_folder)
+                    
                     lineNotifyMessage(f'{aedtz} is Running!')
+                    logging.info(f'{aedtz} is running.')
+                    
                     os.system(f'ansysedt -BatchSolve -ng -monitor -autoextract reports -machinelist list="localhost:4:20:90%:1" {new_aedt_path}')
+
                 except:
                     time.sleep(10)
 
             deleteFilesOverDays()
                 
-    except KeyboardInterrupt:
+    except:
+        logging.exception('ERROR')
         observer.stop()
 
     observer.join()
