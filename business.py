@@ -9,6 +9,7 @@ import requests
 import datetime
 import shutil
 import logging
+import subprocess
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -57,10 +58,11 @@ class MyHandler(FileSystemEventHandler):
     
     def on_deleted(self, event):
         if '.aedtz.lock' in event.src_path:
-            time.sleep(1)
+
             dir_name = os.path.dirname(event.src_path)
             shutil.make_archive(dir_name, 'zip', dir_name)
             os.chdir(queue_dir)
+            time.sleep(1)
             shutil.rmtree(dir_name)
             logging.info('{} removed.'.format(event.src_path))
             lineNotifyMessage(f'{dir_name} is Accomplished!')
@@ -73,6 +75,46 @@ def deleteFilesOverDays():
           if datetime.datetime.now() - file_modified > datetime.timedelta(days=days_to_keep):
               os.remove(curpath)
 
+def get_size(start_path = '.'):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(start_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size
+
+def solveAEDTZ(aedtz_path):
+    print(aedtz_path)
+    os.chdir(queue_dir)
+    folder = os.path.dirname(aedtz_path)
+    p = subprocess.Popen(['ansysedt', 
+                          '-BatchSolve', 
+                          '-ng', 
+                          '-monitor', 
+                          '-autoextract', 
+                          'reports', 
+                          '-machinelist', 
+                          'list="localhost:4:20:90%:1"', 
+                          aedtz_path])
+    last_size = 0
+    while(p.poll() == None):
+        print(f'process id: {p.poll()}')
+        size = get_size(folder)
+        print(f'folder size:{size}')
+        time.sleep(60)
+        if size != last_size:
+            last_size = size
+        else:
+            p.terminate()
+            time.sleep(1)
+            for f in os.listdir(folder):
+                if f.endswith('.aedtz.lock'):
+                    os.remove(os.path.join(folder, f))
+    
+    print(f'process return code:{p.poll()}')
 
 if __name__ == "__main__":
     event_handler = MyHandler()
@@ -100,7 +142,7 @@ if __name__ == "__main__":
                     lineNotifyMessage(f'{aedtz} is Running!')
                     logging.info(f'{aedtz} is running.')
                     
-                    os.system(f'ansysedt -BatchSolve -ng -monitor -autoextract reports -machinelist list="localhost:4:20:90%:1" {new_aedt_path}')
+                    solveAEDTZ(new_aedt_path)
 
                 except:
                     time.sleep(10)
