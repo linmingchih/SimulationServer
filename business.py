@@ -1,7 +1,7 @@
 ansysEM_path = "C:/Program Files/AnsysEM"
 queue_dir = 'D:/demo'
 days_to_keep = 3
-line_notify_handler = '58ceAuCRlEIZPnjkcf4LGLV32AVgwSSNfYymTfUpxRi'
+line_notify_handler = '58ceAuCRlEIZPnjkcf4LGLV32AVgwSSNfYymTfUpxR9'
 
 import os
 import time
