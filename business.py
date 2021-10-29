@@ -1,5 +1,5 @@
-ansysEM_path = r"C:/Program Files/AnsysEM"
-queue_dir = 'c:/demo/'
+ansysEM_path = "C:/Program Files/AnsysEM"
+queue_dir = 'D:/demo'
 days_to_keep = 3
 line_notify_handler = '58ceAuCRlEIZPnjkcf4LGLV32AVgwSSNfYymTfUpxRi'
 
@@ -8,6 +8,7 @@ import time
 import requests
 import datetime
 import shutil
+import psutil
 import logging
 import subprocess
 from watchdog.observers import Observer
@@ -101,10 +102,14 @@ def solveAEDTZ(aedtz_path):
                           aedtz_path])
     last_size = 0
     while(p.poll() == None):
-        print(f'process id: {p.poll()}')
-        size = get_size(folder)
-        print(f'folder size:{size}')
-        time.sleep(60)
+        print(f'processa id: {p.poll()}')
+        process = psutil.Process(p.pid)
+        size_m = process.memory_info().rss
+        size_f = get_size(folder)
+        size = size_m + size_f
+        print(f'total size:{size}')
+        time.sleep(10)
+        
         if size != last_size:
             last_size = size
         else:

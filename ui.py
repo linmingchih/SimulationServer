@@ -1,5 +1,5 @@
 ansysEM_path = "C:/Program Files/AnsysEM"
-queue_dir = 'c:/demo/'
+queue_dir = 'D:/demo'
 
 import os
 import time
