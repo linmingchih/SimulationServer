@@ -6,4 +6,11 @@
 - 輸入.\pip install streamlit_autorefresh
 4. 建d:\demo目錄
 5. 將ui.py及business.py及AEDTRemoteHost.bat複製到任一目錄當中，修改py當中的環境變數設定：ansysEM_path, queue_dir, days_to_keep, line_notify_handler等。
+- 批次檔要填python.exe存放的目錄
+  * set PATH=D:\myvenv\Scripts
+- python當中的參數
+  * ansysEM_path：AEDT Win64的路徑
+  * queue_dir：上傳檔案要存放的目錄
+  * days_to_keep：檔案保留天數
+  * line_notify_handler：Line傳送Handle可不填
 6. 執行AEDTRemoteHost.bat。成功的話會啟動瀏覽器並開啟localhost:8501頁面。
