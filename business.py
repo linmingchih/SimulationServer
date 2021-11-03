@@ -108,7 +108,7 @@ def solveAEDTZ(aedtz_path):
         size_f = get_size(folder)
         size = size_m + size_f
         print(f'total size:{size}')
-        time.sleep(10)
+        time.sleep(60)
         
         if size != last_size:
             last_size = size
